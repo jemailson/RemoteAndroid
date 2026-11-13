@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remote Android — Admin</title>
+<style>
+:root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e0e0e8;
+    --text2: #8888aa;
+    --accent: #e94560;
+    --accent2: #ff6b81;
+    --green: #00c853;
+    --yellow: #ffd600;
+    --red: #ff1744;
+    --blue: #448aff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+.login-screen, .admin-screen { padding: 20px; max-width: 1000px; margin: 0 auto; }
+.login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+.login-box h1 { color: var(--accent); font-size: 24px; margin-bottom: 8px; }
+.login-box p { color: var(--text2); font-size: 14px; margin-bottom: 24px; }
+.login-box input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+.login-box input:focus { outline: none; border-color: var(--accent); }
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-blue { background: var(--blue); color: #fff; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.hidden { display: none !important; }
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+}
+header h1 { font-size: 22px; color: var(--accent); }
+header .stats { display: flex; gap: 16px; }
+.stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+}
+.stat-chip b { color: var(--accent); }
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+.card h2 { font-size: 16px; margin-bottom: 16px; color: var(--accent2); }
+
+.gen-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+.form-group input, .form-group select {
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    min-width: 140px;
+}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+select option { background: var(--bg); color: var(--text); }
+
+.generated-keys {
+    margin-top: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text2);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(233,69,96,0.1); }
+
+.keys-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.keys-table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.keys-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(42,42,58,0.5);
+    vertical-align: middle;
+}
+.keys-table tr:hover { background: rgba(233,69,96,0.03); }
+.key-text { font-family: 'Consolas', monospace; font-size: 12px; color: var(--accent2); }
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.badge-unused { background: rgba(68,138,255,0.15); color: var(--blue); }
+.badge-active { background: rgba(0,200,83,0.15); color: var(--green); }
+.badge-expired { background: rgba(255,214,0,0.15); color: var(--yellow); }
+.badge-banned { background: rgba(255,23,68,0.15); color: var(--red); }
+
+.actions { display: flex; gap: 6px; }
+.copy-btn { cursor: pointer; color: var(--text2); transition: color 0.2s; background: none; border: none; font-size: 14px; }
+.copy-btn:hover { color: var(--accent); }
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--green);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 768px) {
+    .gen-form { flex-direction: column; }
+    .form-group { width: 100%; }
+    .form-group input, .form-group select { width: 100%; }
+    .keys-table { font-size: 11px; }
+    .keys-table th, .keys-table td { padding: 8px 6px; }
+    header .stats { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-screen">
+    <div class="login-box">
+        <h1>REMOTE ANDROID</h1>
+        <p>Painel Administrativo — Key Generator</p>
+        <input type="password" id="adminPass" placeholder="Senha admin" autocomplete="off">
+        <div id="loginError" style="color:var(--red);font-size:13px;margin-bottom:12px" class="hidden"></div>
+        <button class="btn btn-primary" style="width:100%" onclick="doLogin()">ENTRAR</button>
+    </div>
+</div>
+
+<div id="adminScreen" class="admin-screen hidden">
+    <header>
+        <h1>REMOTE ANDROID — Admin</h1>
+        <div class="stats">
+            <span class="stat-chip">Total: <b id="statTotal">0</b></span>
+            <span class="stat-chip">Ativas: <b id="statActive" style="color:var(--green)">0</b></span>
+            <span class="stat-chip">Não usadas: <b id="statUnused" style="color:var(--blue)">0</b></span>
+            <span class="stat-chip">Expiradas: <b id="statExpired" style="color:var(--yellow)">0</b></span>
+        </div>
+    </header>
+
+    <div class="card">
+        <h2>Gerar Keys</h2>
+        <div class="gen-form">
+            <div class="form-group">
+                <label>Prefixo</label>
+                <input type="text" id="genPrefix" value="RA" maxlength="10" placeholder="RA">
+            </div>
+            <div class="form-group">
+                <label>Duração</label>
+                <select id="genDuration">
+                    <option value="1h">1 Hora</option>
+                    <option value="6h">6 Horas</option>
+                    <option value="12h">12 Horas</option>
+                    <option value="1d" selected>1 Dia</option>
+                    <option value="3d">3 Dias</option>
+                    <option value="7d">7 Dias</option>
+                    <option value="15d">15 Dias</option>
+                    <option value="30d">30 Dias</option>
+                    <option value="lifetime">Lifetime</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantidade</label>
+                <input type="number" id="genCount" value="1" min="1" max="100">
+            </div>
+            <button class="btn btn-primary" onclick="generateKeys()">GERAR KEYS</button>
+            <button class="btn btn-outline" id="btnCopyAll" onclick="copyAllGenerated()" class="hidden">COPIAR TODAS</button>
+        </div>
+        <div id="generatedOutput" class="generated-keys hidden"></div>
+    </div>
+
+    <div class="card">
+        <h2>Keys Registradas</h2>
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">Todas</button>
+            <button class="filter-btn" data-filter="unused" onclick="setFilter('unused',this)">Não usadas</button>
+            <button class="filter-btn" data-filter="active" onclick="setFilter('active',this)">Ativas</button>
+            <button class="filter-btn" data-filter="expired" onclick="setFilter('expired',this)">Expiradas</button>
+            <button class="filter-btn" data-filter="banned" onclick="setFilter('banned',this)">Banidas</button>
+        </div>
+        <div style="overflow-x:auto">
+            <table class="keys-table">
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Status</th>
+                        <th>Duração</th>
+                        <th>Restante</th>
+                        <th>HWID</th>
+                        <th>Criada</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="keysBody"></tbody>
+            </table>
+        </div>
+        <div id="noKeys" style="text-align:center;color:var(--text2);padding:40px;font-size:14px" class="hidden">
+            Nenhuma key encontrada. Gere suas primeiras keys acima.
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+let adminPassword = '';
+let currentFilter = 'all';
+let lastGenerated = [];
+
+const API = window.location.origin;
+
+function doLogin() {
+    const pass = document.getElementById('adminPass').value;
+    if (!pass) return;
+    adminPassword = pass;
+    fetch(API + '/api/admin/keys', {
+        headers: { 'X-Admin-Password': pass }
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('Senha inválida');
+        return r.json();
+    })
+    .then(data => {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('adminScreen').classList.remove('hidden');
+        renderKeys(data);
+    })
+    .catch(e => {
+        const err = document.getElementById('loginError');
+        err.textContent = 'Senha incorreta';
+        err.classList.remove('hidden');
+    });
+}
+
+document.getElementById('adminPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+});
+
+function apiCall(method, endpoint, body) {
+    const opts = {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Password': adminPassword
+        }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    return fetch(API + endpoint, opts).then(r => r.json());
+}
+
+function generateKeys() {
+    const prefix = document.getElementById('genPrefix').value.trim() || 'RA';
+    const duration = document.getElementById('genDuration').value;
+    const count = parseInt(document.getElementById('genCount').value) || 1;
+
+    apiCall('POST', '/api/admin/generate', { prefix, duration, count })
+    .then(data => {
+        lastGenerated = data.keys;
+        const output = document.getElementById('generatedOutput');
+        output.classList.remove('hidden');
+        output.textContent = data.keys.map(k => k.key).join('\n');
+        document.getElementById('btnCopyAll').classList.remove('hidden');
+        showToast(`${data.keys.length} key(s) gerada(s)!`);
+        loadKeys();
+    });
+}
+
+function copyAllGenerated() {
+    const text = lastGenerated.map(k => k.key).join('\n');
+    navigator.clipboard.writeText(text);
+    showToast('Keys copiadas!');
+}
+
+function loadKeys() {
+    let url = '/api/admin/keys';
+    if (currentFilter !== 'all') url += '?status=' + currentFilter;
+    apiCall('GET', url).then(renderKeys);
+}
+
+function renderKeys(data) {
+    document.getElementById('statTotal').textContent = data.total;
+    document.getElementById('statActive').textContent = data.active;
+    document.getElementById('statUnused').textContent = data.unused;
+    document.getElementById('statExpired').textContent = data.expired;
+
+    const tbody = document.getElementById('keysBody');
+    const noKeys = document.getElementById('noKeys');
+
+    if (data.keys.length === 0) {
+        tbody.innerHTML = '';
+        noKeys.classList.remove('hidden');
+        return;
+    }
+    noKeys.classList.add('hidden');
+
+    tbody.innerHTML = data.keys.map(k => {
+        const badge = `<span class="badge badge-${k.status}">${k.status}</span>`;
+        const remaining = getRemaining(k);
+        const hwid = k.hwid ? k.hwid.substring(0, 12) + '...' : '—';
+        const created = new Date(k.createdAt).toLocaleString('pt-BR');
+
+        let actions = `<button class="copy-btn" onclick="copyKey('${k.key}')" title="Copiar">📋</button>`;
+        if (k.status === 'active' || k.status === 'unused') {
+            actions += ` <button class="btn btn-sm btn-danger" onclick="banKey('${k.key}')">Ban</button>`;
+        }
+        if (k.status === 'banned') {
+            actions += ` <button class="btn btn-sm btn-success" onclick="unbanKey('${k.key}')">Unban</button>`;
+        }
+        if (k.hwid) {
+            actions += ` <button class="btn btn-sm btn-blue" onclick="resetHwid('${k.key}')">Reset HWID</button>`;
+        }
+        actions += ` <button class="btn btn-sm btn-outline" onclick="deleteKey('${k.key}')">Del</button>`;
+
+        return `<tr>
+            <td class="key-text">${k.key}</td>
+            <td>${badge}</td>
+            <td>${k.duration}</td>
+            <td>${remaining}</td>
+            <td style="font-size:11px;color:var(--text2)">${hwid}</td>
+            <td style="font-size:11px;color:var(--text2)">${created}</td>
+            <td><div class="actions">${actions}</div></td>
+        </tr>`;
+    }).join('');
+}
+
+function getRemaining(k) {
+    if (k.status === 'unused') return '—';
+    if (k.duration === 'lifetime') return 'Lifetime';
+    if (!k.expiresAt) return '—';
+    const ms = k.expiresAt - Date.now();
+    if (ms <= 0) return 'Expirado';
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    if (h >= 24) return Math.floor(h / 24) + 'd ' + (h % 24) + 'h';
+    return h + 'h ' + m + 'm';
+}
+
+function setFilter(f, el) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    loadKeys();
+}
+
+function copyKey(key) {
+    navigator.clipboard.writeText(key);
+    showToast('Key copiada!');
+}
+
+function banKey(key) {
+    apiCall('POST', '/api/admin/ban', { key }).then(() => { showToast('Key banida'); loadKeys(); });
+}
+
+function unbanKey(key) {
+    apiCall('POST', '/api/admin/unban', { key }).then(() => { showToast('Key desbanida'); loadKeys(); });
+}
+
+function resetHwid(key) {
+    apiCall('POST', '/api/admin/reset-hwid', { key }).then(() => { showToast('HWID resetado'); loadKeys(); });
+}
+
+function deleteKey(key) {
+    if (!confirm('Deletar key ' + key + '?')) return;
+    apiCall('POST', '/api/admin/delete', { key }).then(() => { showToast('Key deletada'); loadKeys(); });
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

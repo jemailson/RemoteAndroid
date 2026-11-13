@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: remote-android
+    runtime: docker
+    plan: free
+    envVars:
+      - key: ADMIN_PASS
+        value: remoteandroid2026
+      - key: PORT
+        value: "3000"

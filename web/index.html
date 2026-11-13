@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remote Android - Painel de Controle</title>
+<style>
+:root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a2e;
+    --bg-input: #16213e;
+    --accent: #e94560;
+    --accent-glow: rgba(233, 69, 96, 0.3);
+    --accent-secondary: #0f3460;
+    --text: #eee;
+    --text-dim: #888;
+    --green: #00e676;
+    --yellow: #ffd600;
+    --blue: #448aff;
+    --border: #2a2a3e;
+    --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: var(--bg-primary);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+.header {
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+.logo h1 {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent), #ff6b8a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.logo span {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: block;
+}
+.status-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff4444;
+    animation: pulse 2s infinite;
+}
+.status-dot.online { background: var(--green); }
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.status-text { font-size: 13px; color: var(--text-dim); }
+.connection-panel {
+    max-width: 480px;
+    margin: 80px auto;
+    padding: 40px;
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+.connection-panel h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+.connection-panel p {
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    font-size: 14px;
+}
+.pair-input {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.pair-input input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    color: var(--text);
+    font-size: 24px;
+    text-align: center;
+    letter-spacing: 8px;
+    font-weight: 700;
+    outline: none;
+    transition: border-color 0.3s;
+}
+.pair-input input:focus { border-color: var(--accent); }
+.pair-input input::placeholder {
+    letter-spacing: 2px;
+    font-size: 14px;
+    color: var(--text-dim);
+}
+.btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+.btn:hover {
+    background: #d13550;
+    box-shadow: 0 0 30px var(--accent-glow);
+    transform: translateY(-1px);
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-secondary {
+    background: var(--accent-secondary);
+}
+.main-panel {
+    display: none;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.device-info {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.device-info .left { display: flex; align-items: center; gap: 12px; }
+.device-info .device-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--accent-secondary);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+.device-info .device-name { font-weight: 600; font-size: 15px; }
+.device-info .device-game { font-size: 12px; color: var(--text-dim); }
+.device-stats {
+    display: flex;
+    gap: 20px;
+}
+.stat {
+    text-align: center;
+}
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green);
+}
+.stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+.tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    padding: 4px;
+    overflow-x: auto;
+}
+.tab {
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    transition: all 0.3s;
+    white-space: nowrap;
+    border: none;
+    background: none;
+}
+.tab.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+.tab:hover:not(.active) { color: var(--text); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 20px;
+}
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.card-title {
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.toggle {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    cursor: pointer;
+}
+.toggle input { display: none; }
+.toggle-track {
+    position: absolute;
+    inset: 0;
+    background: #333;
+    border-radius: 13px;
+    transition: background 0.3s;
+}
+.toggle input:checked + .toggle-track { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+.toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+.toggle input:checked ~ .toggle-thumb { transform: translateX(22px); }
+.control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.control-row:last-child { border-bottom: none; }
+.control-label {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+.control-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 40px;
+    text-align: right;
+}
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 120px;
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+select {
+    background: var(--bg-input);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    outline: none;
+}
+.weapon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+.weapon-card {
+    background: var(--bg-input);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    transition: border-color 0.3s;
+}
+.weapon-card:hover { border-color: var(--accent); }
+.weapon-name {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.weapon-attr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+.weapon-attr span:first-child { color: var(--text-dim); }
+.level-select {
+    display: flex;
+    gap: 4px;
+}
+.level-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-primary);
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.level-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+.inject-btn {
+    background: linear-gradient(135deg, var(--accent), #ff6b8a);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 20px;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.inject-btn:hover {
+    box-shadow: 0 0 40px var(--accent-glow);
+    transform: translateY(-2px);
+}
+.inject-btn.injected {
+    background: linear-gradient(135deg, #00c853, #00e676);
+}
+.log {
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 12px;
+}
+.log-entry { padding: 2px 0; }
+.log-entry.info { color: var(--blue); }
+.log-entry.success { color: var(--green); }
+.log-entry.error { color: var(--accent); }
+.log-entry .time { color: var(--text-dim); margin-right: 8px; }
+.color-picker-row { display: flex; align-items: center; gap: 10px; }
+input[type="color"] {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: none;
+}
+.fov-visual {
+    width: 100%;
+    height: 120px;
+    position: relative;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.fov-circle {
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    position: absolute;
+    opacity: 0.6;
+    transition: all 0.3s;
+}
+.fov-crosshair {
+    width: 12px;
+    height: 12px;
+    position: relative;
+}
+.fov-crosshair::before, .fov-crosshair::after {
+    content: '';
+    position: absolute;
+    background: var(--accent);
+}
+.fov-crosshair::before { width: 12px; height: 2px; top: 5px; left: 0; }
+.fov-crosshair::after { width: 2px; height: 12px; top: 0; left: 5px; }
+@media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    .header { padding: 12px 16px; }
+    .main-panel { padding: 12px; }
+    .device-info { flex-direction: column; gap: 12px; }
+    .tabs { overflow-x: auto; }
+}
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    font-size: 13px;
+    z-index: 1000;
+    animation: slideIn 0.3s;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+@keyframes slideIn {
+    from { transform: translateX(100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+.key-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-primary);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.key-screen.hidden { display: none; }
+.key-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+}
+.key-box h1 { color: var(--accent); font-size: 28px; margin-bottom: 4px; }
+.key-box p { color: var(--text-dim); font-size: 14px; margin-bottom: 28px; }
+.key-box input {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Consolas', monospace;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 16px;
+}
+.key-box input:focus { outline: none; border-color: var(--accent); }
+.key-box .key-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.key-box .key-btn:hover { background: #ff6b81; }
+.key-box .key-error { color: #ff1744; font-size: 13px; margin-bottom: 12px; min-height: 18px; }
+.key-box .key-info { color: var(--green); font-size: 13px; margin-top: 12px; min-height: 18px; }
+</style>
+</head>
+<body>
+
+<div id="keyScreen" class="key-screen">
+    <div class="key-box">
+        <h1>REMOTE ANDROID</h1>
+        <p>Insira sua key de acesso</p>
+        <input type="text" id="keyInput" placeholder="RA-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
+        <div class="key-error" id="keyError"></div>
+        <button class="key-btn" id="keyBtn" onclick="submitKey()">ATIVAR KEY</button>
+        <div class="key-info" id="keyInfo"></div>
+    </div>
+</div>
+
+<div class="header">
+    <div class="logo">
+        <div class="logo-icon">RA</div>
+        <div>
+            <h1>Remote Android</h1>
+            <span>Free Fire Control Panel</span>
+        </div>
+    </div>
+    <div class="status-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <span class="status-text" id="statusText">Desconectado</span>
+    </div>
+</div>
+
+<div id="connectionPanel" class="connection-panel">
+    <h2>Conectar Dispositivo</h2>
+    <p>Digite o código de pareamento exibido no aplicativo do celular</p>
+    <div class="pair-input">
+        <input type="text" id="pairCode" maxlength="6" placeholder="000000" autocomplete="off">
+    </div>
+    <button class="btn" id="pairBtn" onclick="pair()">CONECTAR</button>
+    <div class="log" id="connectionLog" style="margin-top: 20px;"></div>
+</div>
+
+<div id="mainPanel" class="main-panel">
+    <div class="device-info">
+        <div class="left">
+            <div class="device-icon">📱</div>
+            <div>
+                <div class="device-name" id="deviceName">-</div>
+                <div class="device-game" id="deviceGame">Free Fire</div>
+            </div>
+        </div>
+        <div class="device-stats">
+            <div class="stat">
+                <div class="stat-value" id="pingValue">-</div>
+                <div class="stat-label">PING</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="fpsValue">-</div>
+                <div class="stat-label">FPS</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="injectedStatus">OFF</div>
+                <div class="stat-label">STATUS</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="aimbot">Aimbot</button>
+        <button class="tab" data-tab="esp">ESP</button>
+        <button class="tab" data-tab="weapons">Armas</button>
+        <button class="tab" data-tab="misc">Misc</button>
+        <button class="tab" data-tab="inject">Injetar</button>
+    </div>
+
+    <!-- AIMBOT TAB -->
+    <div class="tab-content active" id="tab-aimbot">
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🎯 Aimbot</div>
+                    <label class="toggle">
+                        <input type="checkbox" id="aimbotEnabled" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Tecla de Ativação</span>
+                    <select id="aimbotKey" onchange="updateControls()">
+                        <option value="hold_aim">Segurar Mira</option>
+                        <option value="hold_fire">Segurar Tiro</option>
+                        <option value="always">Sempre Ativo</option>
+                    </select>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Alvo</span>
+                    <select id="aimbotTarget" onchange="updateControls()">
+                        <option value="head">Cabeça</option>
+                        <option value="neck">Pescoço</option>
+                        <option value="chest">Peito</option>
+                        <option value="nearest">Mais Próximo</option>
+                    </select>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Suavização</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="aimbotSmooth" min="1" max="20" value="5" oninput="updateControls()">
+                        <span class="control-value" id="aimbotSmoothVal">5</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Velocidade</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="aimbotSpeed" min="1" max="100" value="50" oninput="updateControls()">
+                        <span class="control-value" id="aimbotSpeedVal">50</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Distância Máx.</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="aimbotDistance" min="10" max="500" value="200" oninput="updateControls()">
+                        <span class="control-value" id="aimbotDistanceVal">200m</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🔴 FOV</div>
+                    <label class="toggle">
+                        <input type="checkbox" id="fovShow" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="fov-visual">
+                    <div class="fov-circle" id="fovCircle"></div>
+                    <div class="fov-crosshair"></div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Tamanho FOV</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="fovSize" min="10" max="500" value="120" oninput="updateFov()">
+                        <span class="control-value" id="fovSizeVal">120</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Cor do FOV</span>
+                    <input type="color" id="fovColor" value="#e94560" onchange="updateControls()">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🔫 Trigger Bot</div>
+                    <label class="toggle">
+                        <input type="checkbox" id="triggerEnabled" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Delay (ms)</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="triggerDelay" min="0" max="200" value="50" oninput="updateControls()">
+                        <span class="control-value" id="triggerDelayVal">50ms</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Recoil Comp.</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="recoilComp" min="0" max="100" value="70" oninput="updateControls()">
+                        <span class="control-value" id="recoilCompVal">70%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESP TAB -->
+    <div class="tab-content" id="tab-esp">
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">👁️ ESP Caixa (Box)</div>
+                    <label class="toggle">
+                        <input type="checkbox" id="espBoxEnabled" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Estilo</span>
+                    <select id="espBoxStyle" onchange="updateControls()">
+                        <option value="full">Caixa Completa</option>
+                        <option value="corner">Cantos</option>
+                        <option value="3d">3D Box</option>
+                    </select>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Cor Inimigo</span>
+                    <input type="color" id="espBoxColorEnemy" value="#ff0000" onchange="updateControls()">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Cor Visível</span>
+                    <input type="color" id="espBoxColorVisible" value="#00ff00" onchange="updateControls()">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Espessura</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="espBoxThickness" min="1" max="5" value="2" oninput="updateControls()">
+                        <span class="control-value" id="espBoxThicknessVal">2</span>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Mostrar Nome</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="espShowName" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Mostrar HP</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="espShowHP" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Mostrar Distância</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="espShowDist" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">💀 ESP Esqueleto (Skeleton)</div>
+                    <label class="toggle">
+                        <input type="checkbox" id="espSkeletonEnabled" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Cor Esqueleto</span>
+                    <input type="color" id="espSkeletonColor" value="#ffffff" onchange="updateControls()">
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Espessura</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="espSkeletonThickness" min="1" max="4" value="1" oninput="updateControls()">
+                        <span class="control-value" id="espSkeletonThicknessVal">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📍 ESP Linha (Snapline)</div>
+                    <label class="toggle">
+                        <input type="checkbox" id="espLineEnabled" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Origem</span>
+                    <select id="espLineOrigin" onchange="updateControls()">
+                        <option value="bottom">Parte Inferior</option>
+                        <option value="center">Centro</option>
+                        <option value="top">Topo</option>
+                    </select>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Cor Linha</span>
+                    <input type="color" id="espLineColor" value="#448aff" onchange="updateControls()">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">✨ ESP Glow</div>
+                    <label class="toggle">
+                        <input type="checkbox" id="espGlowEnabled" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Intensidade</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="espGlowIntensity" min="1" max="10" value="5" oninput="updateControls()">
+                        <span class="control-value" id="espGlowIntensityVal">5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WEAPONS TAB -->
+    <div class="tab-content" id="tab-weapons">
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-header">
+                <div class="card-title">🔧 Atributos das Armas</div>
+                <span style="font-size: 12px; color: var(--text-dim);">Level 1-4 para cada atributo</span>
+            </div>
+        </div>
+        <div class="weapon-grid" id="weaponGrid"></div>
+    </div>
+
+    <!-- MISC TAB -->
+    <div class="tab-content" id="tab-misc">
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🏃 Movimentação</div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Speed Hack</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="speedHack" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Velocidade</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input type="range" id="speedValue" min="1" max="5" step="0.5" value="1.5" oninput="updateControls()">
+                        <span class="control-value" id="speedValueVal">1.5x</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🛡️ Proteção</div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Anti-Ban VPN</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="antiBan" checked onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Spoof HWID</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="spoofHwid" onchange="updateControls()">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INJECT TAB -->
+    <div class="tab-content" id="tab-inject">
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">💉 Injeção</div>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Método</span>
+                    <select id="injectMethod">
+                        <option value="vpn">VPN Tunnel</option>
+                        <option value="proxy">Proxy Local</option>
+                    </select>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Auto-Inject</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="autoInject">
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                </div>
+                <button class="inject-btn" id="injectBtn" onclick="inject()">
+                    INJETAR NO FREE FIRE
+                </button>
+                <div class="log" id="injectLog"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const WS_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`;
+let ws = null;
+let paired = false;
+let deviceId = null;
+let injected = false;
+
+const weapons = [
+    { id: 'mp40', name: 'MP40', icon: '🔫' },
+    { id: 'm1887', name: 'M1887', icon: '🔫' },
+    { id: 'ak47', name: 'AK-47', icon: '🔫' },
+    { id: 'm4a1', name: 'M4A1', icon: '🔫' },
+    { id: 'scar', name: 'SCAR', icon: '🔫' },
+    { id: 'groza', name: 'GROZA', icon: '🔫' },
+    { id: 'awm', name: 'AWM', icon: '🎯' },
+    { id: 'kar98k', name: 'Kar98K', icon: '🎯' },
+    { id: 'xm8', name: 'XM8', icon: '🔫' },
+    { id: 'ump', name: 'UMP', icon: '🔫' },
+    { id: 'p90', name: 'P90', icon: '🔫' },
+    { id: 'thompson', name: 'Thompson', icon: '🔫' },
+];
+
+const weaponAttrs = [
+    { id: 'damage', name: 'Dano' },
+    { id: 'firerate', name: 'Cadência' },
+    { id: 'accuracy', name: 'Precisão' },
+    { id: 'range', name: 'Alcance' },
+    { id: 'recoil', name: 'Recuo' },
+    { id: 'reload', name: 'Recarga' },
+];
+
+const weaponState = {};
+
+function initWeapons() {
+    const grid = document.getElementById('weaponGrid');
+    grid.innerHTML = '';
+    weapons.forEach(w => {
+        weaponState[w.id] = {};
+        weaponAttrs.forEach(a => { weaponState[w.id][a.id] = 0; });
+        const card = document.createElement('div');
+        card.className = 'weapon-card';
+        let attrsHtml = weaponAttrs.map(a => `
+            <div class="weapon-attr">
+                <span>${a.name}</span>
+                <div class="level-select">
+                    ${[0,1,2,3,4].map(lv => `
+                        <button class="level-btn ${lv===0?'active':''}"
+                                data-weapon="${w.id}" data-attr="${a.id}" data-level="${lv}"
+                                onclick="setWeaponLevel('${w.id}','${a.id}',${lv},this)">
+                            ${lv === 0 ? 'OFF' : lv}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+        card.innerHTML = `
+            <div class="weapon-name">${w.icon} ${w.name}</div>
+            ${attrsHtml}
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function setWeaponLevel(weaponId, attrId, level, btn) {
+    weaponState[weaponId][attrId] = level;
+    const siblings = btn.parentElement.querySelectorAll('.level-btn');
+    siblings.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updateControls();
+}
+
+let activeKey = localStorage.getItem('ra_key') || '';
+let activeHwid = localStorage.getItem('ra_hwid') || 'web-' + Math.random().toString(36).substring(2, 10);
+localStorage.setItem('ra_hwid', activeHwid);
+let keyAuthenticated = false;
+
+function submitKey() {
+    const key = document.getElementById('keyInput').value.trim();
+    if (!key) return;
+    document.getElementById('keyError').textContent = '';
+    document.getElementById('keyInfo').textContent = 'Validando...';
+    document.getElementById('keyBtn').disabled = true;
+
+    fetch(window.location.origin + '/api/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, hwid: activeHwid })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('keyBtn').disabled = false;
+        if (data.valid) {
+            activeKey = key;
+            localStorage.setItem('ra_key', key);
+            keyAuthenticated = true;
+            document.getElementById('keyScreen').classList.add('hidden');
+            const rem = data.remaining;
+            if (rem) {
+                const h = Math.floor(rem / 3600000);
+                document.getElementById('keyInfo').textContent = `Válida — ${h}h restantes`;
+            } else {
+                document.getElementById('keyInfo').textContent = 'Key Lifetime ativa';
+            }
+            connect();
+        } else {
+            document.getElementById('keyError').textContent = data.error || 'Key inválida';
+            document.getElementById('keyInfo').textContent = '';
+        }
+    })
+    .catch(() => {
+        document.getElementById('keyBtn').disabled = false;
+        document.getElementById('keyError').textContent = 'Erro de conexão com servidor';
+        document.getElementById('keyInfo').textContent = '';
+    });
+}
+
+document.getElementById('keyInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitKey();
+});
+
+function connect() {
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => {
+        log('connectionLog', 'Conectado ao servidor', 'success');
+        ws.send(JSON.stringify({ type: 'auth_key', key: activeKey, hwid: activeHwid }));
+    };
+    ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        handleMessage(msg);
+    };
+    ws.onclose = () => {
+        log('connectionLog', 'Desconectado do servidor', 'error');
+        document.getElementById('statusDot').classList.remove('online');
+        document.getElementById('statusText').textContent = 'Desconectado';
+        if (keyAuthenticated) setTimeout(connect, 3000);
+    };
+    ws.onerror = () => {
+        log('connectionLog', 'Erro de conexão', 'error');
+    };
+}
+
+function handleMessage(msg) {
+    switch (msg.type) {
+        case 'auth_result':
+            if (msg.valid) {
+                log('connectionLog', 'Key autenticada', 'success');
+                ws.send(JSON.stringify({ type: 'register_panel' }));
+            } else {
+                log('connectionLog', 'Key rejeitada: ' + (msg.error || ''), 'error');
+                localStorage.removeItem('ra_key');
+                keyAuthenticated = false;
+                document.getElementById('keyScreen').classList.remove('hidden');
+                document.getElementById('keyError').textContent = msg.error || 'Key inválida';
+            }
+            break;
+        case 'auth_required':
+            log('connectionLog', 'Autenticação necessária', 'error');
+            document.getElementById('keyScreen').classList.remove('hidden');
+            break;
+        case 'panel_ready':
+            log('connectionLog', 'Painel registrado. Insira o código.', 'info');
+            break;
+        case 'paired':
+            paired = true;
+            deviceId = msg.deviceId;
+            document.getElementById('connectionPanel').style.display = 'none';
+            document.getElementById('mainPanel').style.display = 'block';
+            document.getElementById('deviceName').textContent = msg.model || 'Dispositivo';
+            document.getElementById('deviceGame').textContent = msg.game || 'Free Fire';
+            document.getElementById('statusDot').classList.add('online');
+            document.getElementById('statusText').textContent = 'Conectado';
+            toast('Dispositivo conectado!');
+            break;
+        case 'pair_error':
+            log('connectionLog', msg.error, 'error');
+            document.getElementById('pairBtn').disabled = false;
+            document.getElementById('pairBtn').textContent = 'CONECTAR';
+            break;
+        case 'device_status':
+            if (msg.ping) document.getElementById('pingValue').textContent = msg.ping + 'ms';
+            if (msg.fps) document.getElementById('fpsValue').textContent = msg.fps;
+            break;
+        case 'controls_ack':
+            if (msg.applied) {
+                toast('Configurações aplicadas');
+            }
+            break;
+        case 'device_disconnected':
+            paired = false;
+            document.getElementById('statusDot').classList.remove('online');
+            document.getElementById('statusText').textContent = 'Dispositivo desconectado';
+            toast('Dispositivo desconectado!');
+            break;
+    }
+}
+
+function pair() {
+    const code = document.getElementById('pairCode').value.trim();
+    if (code.length !== 6) {
+        log('connectionLog', 'Código deve ter 6 dígitos', 'error');
+        return;
+    }
+    document.getElementById('pairBtn').disabled = true;
+    document.getElementById('pairBtn').textContent = 'Conectando...';
+    ws.send(JSON.stringify({ type: 'pair', code }));
+    log('connectionLog', 'Pareando com código ' + code + '...', 'info');
+}
+
+function gatherControls() {
+    return {
+        aimbot: {
+            enabled: document.getElementById('aimbotEnabled').checked,
+            key: document.getElementById('aimbotKey').value,
+            target: document.getElementById('aimbotTarget').value,
+            smooth: parseInt(document.getElementById('aimbotSmooth').value),
+            speed: parseInt(document.getElementById('aimbotSpeed').value),
+            maxDistance: parseInt(document.getElementById('aimbotDistance').value),
+        },
+        fov: {
+            show: document.getElementById('fovShow').checked,
+            size: parseInt(document.getElementById('fovSize').value),
+            color: document.getElementById('fovColor').value,
+        },
+        trigger: {
+            enabled: document.getElementById('triggerEnabled').checked,
+            delay: parseInt(document.getElementById('triggerDelay').value),
+            recoilComp: parseInt(document.getElementById('recoilComp').value),
+        },
+        esp: {
+            box: {
+                enabled: document.getElementById('espBoxEnabled').checked,
+                style: document.getElementById('espBoxStyle').value,
+                colorEnemy: document.getElementById('espBoxColorEnemy').value,
+                colorVisible: document.getElementById('espBoxColorVisible').value,
+                thickness: parseInt(document.getElementById('espBoxThickness').value),
+                showName: document.getElementById('espShowName').checked,
+                showHP: document.getElementById('espShowHP').checked,
+                showDistance: document.getElementById('espShowDist').checked,
+            },
+            skeleton: {
+                enabled: document.getElementById('espSkeletonEnabled').checked,
+                color: document.getElementById('espSkeletonColor').value,
+                thickness: parseInt(document.getElementById('espSkeletonThickness').value),
+            },
+            line: {
+                enabled: document.getElementById('espLineEnabled').checked,
+                origin: document.getElementById('espLineOrigin').value,
+                color: document.getElementById('espLineColor').value,
+            },
+            glow: {
+                enabled: document.getElementById('espGlowEnabled').checked,
+                intensity: parseInt(document.getElementById('espGlowIntensity').value),
+            },
+        },
+        weapons: weaponState,
+        misc: {
+            speedHack: document.getElementById('speedHack').checked,
+            speedValue: parseFloat(document.getElementById('speedValue').value),
+            antiBan: document.getElementById('antiBan').checked,
+            spoofHwid: document.getElementById('spoofHwid').checked,
+        },
+    };
+}
+
+function updateControls() {
+    // Update displayed values
+    document.getElementById('aimbotSmoothVal').textContent = document.getElementById('aimbotSmooth').value;
+    document.getElementById('aimbotSpeedVal').textContent = document.getElementById('aimbotSpeed').value;
+    document.getElementById('aimbotDistanceVal').textContent = document.getElementById('aimbotDistance').value + 'm';
+    document.getElementById('triggerDelayVal').textContent = document.getElementById('triggerDelay').value + 'ms';
+    document.getElementById('recoilCompVal').textContent = document.getElementById('recoilComp').value + '%';
+    document.getElementById('espBoxThicknessVal').textContent = document.getElementById('espBoxThickness').value;
+    document.getElementById('espSkeletonThicknessVal').textContent = document.getElementById('espSkeletonThickness').value;
+    document.getElementById('espGlowIntensityVal').textContent = document.getElementById('espGlowIntensity').value;
+    document.getElementById('speedValueVal').textContent = document.getElementById('speedValue').value + 'x';
+    updateFov();
+
+    if (paired && ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({
+            type: 'apply_controls',
+            controls: gatherControls()
+        }));
+    }
+}
+
+function updateFov() {
+    const size = parseInt(document.getElementById('fovSize').value);
+    document.getElementById('fovSizeVal').textContent = size;
+    const circle = document.getElementById('fovCircle');
+    const pxSize = Math.min(size, 110);
+    circle.style.width = pxSize + 'px';
+    circle.style.height = pxSize + 'px';
+    circle.style.borderColor = document.getElementById('fovColor').value;
+}
+
+function inject() {
+    if (!paired) { toast('Conecte um dispositivo primeiro'); return; }
+    const btn = document.getElementById('injectBtn');
+    btn.disabled = true;
+    btn.textContent = 'INJETANDO...';
+    log('injectLog', 'Iniciando injeção via ' + document.getElementById('injectMethod').value.toUpperCase(), 'info');
+
+    ws.send(JSON.stringify({
+        type: 'inject_command',
+        action: 'start',
+        payload: {
+            method: document.getElementById('injectMethod').value,
+            controls: gatherControls()
+        }
+    }));
+
+    setTimeout(() => {
+        log('injectLog', 'Tunnel VPN estabelecido', 'success');
+        setTimeout(() => {
+            log('injectLog', 'Módulos carregados no processo', 'success');
+            setTimeout(() => {
+                log('injectLog', 'Hook de renderização ativo', 'success');
+                log('injectLog', 'Injeção concluída com sucesso!', 'success');
+                btn.textContent = 'INJETADO ✓';
+                btn.classList.add('injected');
+                injected = true;
+                document.getElementById('injectedStatus').textContent = 'ON';
+                document.getElementById('injectedStatus').style.color = 'var(--green)';
+            }, 800);
+        }, 600);
+    }, 500);
+}
+
+function log(elementId, text, type) {
+    const el = document.getElementById(elementId);
+    const time = new Date().toLocaleTimeString();
+    el.innerHTML += `<div class="log-entry ${type}"><span class="time">[${time}]</span>${text}</div>`;
+    el.scrollTop = el.scrollHeight;
+}
+
+function toast(text) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+});
+
+// Heartbeat
+setInterval(() => {
+    if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: 'heartbeat', t: Date.now() }));
+    }
+}, 5000);
+
+// Init
+initWeapons();
+updateFov();
+
+if (activeKey) {
+    document.getElementById('keyInput').value = activeKey;
+    submitKey();
+} else {
+    document.getElementById('keyScreen').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
